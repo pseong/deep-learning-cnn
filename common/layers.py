@@ -134,9 +134,9 @@ class BatchNormalization:
     http://arxiv.org/abs/1502.03167
     """
     def __init__(self, gamma, beta, momentum=0.9, running_mean=None, running_var=None):
-        self.gamma = gamma
-        self.beta = beta
-        self.momentum = momentum
+        self.gamma = gamma # 출력값 확대 ( 1 = 그대로 )
+        self.beta = beta # 출력값 이동 ( 0 = 그대로 )
+        self.momentum = momentum # 저항 값
         self.input_shape = None # 합성곱 계층은 4차원, 완전연결 계층은 2차원  
 
         # 시험할 때 사용할 평균과 분산
@@ -151,14 +151,13 @@ class BatchNormalization:
         self.dbeta = None
 
     def forward(self, x, train_flg=True):
-        self.input_shape = x.shape
-        if x.ndim != 2:
+        self.input_shape = x.shape # 입력 데이터 형상 저장
+        if x.ndim != 2: # 입력 데이터 형상이 2차원이 아니라면 2차원으로 형상 변경
             N, C, H, W = x.shape
             x = x.reshape(N, -1)
-
         out = self.__forward(x, train_flg)
         
-        return out.reshape(*self.input_shape)
+        return out.reshape(*self.input_shape) # 원래 형상으로 되돌림
             
     def __forward(self, x, train_flg):
         if self.running_mean is None:
@@ -166,37 +165,38 @@ class BatchNormalization:
             self.running_mean = np.zeros(D)
             self.running_var = np.zeros(D)
                         
-        if train_flg:
-            mu = x.mean(axis=0)
-            xc = x - mu
-            var = np.mean(xc**2, axis=0)
-            std = np.sqrt(var + 10e-7)
-            xn = xc / std
+        if train_flg: # 훈련일 경우 -> 무조건 훈련먼저 시행하므로 값들이 초기화 됨
+            mu = x.mean(axis=0) # 평균 계산
+            xc = x - mu # 원래 값과 평균과의 차이
+            var = np.mean(xc**2, axis=0) # 분산 계산 - 원래 값과 평균과의 차이의 제곱의 평균 계산
+            std = np.sqrt(var + 10e-7)  # 표준 편차 계산 10e-7를 더하는 이유는 아래 줄에서 0으로 안 나누게 하기 위함
+            xn = xc / std # 원래 값과 평균과의 차이 / 표준편차 -> 평균이 0 표준편차가 1인 값으로 조정
             
             self.batch_size = x.shape[0]
             self.xc = xc
             self.xn = xn
             self.std = std
-            self.running_mean = self.momentum * self.running_mean + (1-self.momentum) * mu
-            self.running_var = self.momentum * self.running_var + (1-self.momentum) * var            
-        else:
-            xc = x - self.running_mean
-            xn = xc / ((np.sqrt(self.running_var + 10e-7)))
+            self.running_mean = self.momentum * self.running_mean + (1-self.momentum) * mu # 한번에 평균을 바꾼는 것이 아니라 저항을 줘서 조금씩 변경
+            self.running_var = self.momentum * self.running_var + (1-self.momentum) * var # 한번에 분산을 바꾼는 것이 아니라 저항을 줘서 조금씩 변경          
+        else: # 훈련이 아닐 경우
+            xc = x - self.running_mean # 원래 값과 사용할 평균의 차이
+            xn = xc / ((np.sqrt(self.running_var + 10e-7))) # 원래 값과 평균과의 차이 / 표준편차 -> 평균이 0 표준편차가 1인 값으로 조정
             
-        out = self.gamma * xn + self.beta 
+        out = self.gamma * xn + self.beta # 출력값 조정 ( 확대와 이동 )
         return out
 
     def backward(self, dout):
-        if dout.ndim != 2:
+        if dout.ndim != 2: # 입력 데이터 형상이 2차원이 아닐 경우 2차원으로 형상 변경
             N, C, H, W = dout.shape
             dout = dout.reshape(N, -1)
 
         dx = self.__backward(dout)
 
-        dx = dx.reshape(*self.input_shape)
+        dx = dx.reshape(*self.input_shape) # 원래 형상으로 되돌림
         return dx
 
     def __backward(self, dout):
+        # dbeta, dgamma, dxn, dxc, dstd, dvar, dxc, dmu, dx 계산 
         dbeta = dout.sum(axis=0)
         dgamma = np.sum(self.xn * dout, axis=0)
         dxn = self.gamma * dout
