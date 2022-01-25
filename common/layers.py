@@ -110,17 +110,22 @@ class Dropout:
     http://arxiv.org/abs/1207.0580
     """
     def __init__(self, dropout_ratio=0.5):
-        self.dropout_ratio = dropout_ratio
+        self.dropout_ratio = dropout_ratio # 비활성화 비율
         self.mask = None
 
     def forward(self, x, train_flg=True):
         if train_flg:
+            # 입력 데이터와 같은 형상의 배열을 생성하고 랜덤 값을 채워넣은 후
+            # 비활성화 비율을 넘는 값만 1 아닌 값은 0
             self.mask = np.random.rand(*x.shape) > self.dropout_ratio
             return x * self.mask
         else:
+            # 훈련이 아닌 경우에는 입력값에다가 활성화 비율을 곱해서 출력
             return x * (1.0 - self.dropout_ratio)
 
     def backward(self, dout):
+        # 역전파는 훈련인 경우이므로 순전파 때 0으로 초기화 한 경우는 0
+        # 그대로 흘려보낸 경우는 똑같이 그대로 흘려보냄
         return dout * self.mask
 
 
