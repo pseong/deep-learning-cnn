@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 from deep_convnet import DeepConvNet
 
-network = DeepConvNet()
+network = DeepConvNet() # 신경망 생성
 network.load_params() # 이미 학습된 가중치(W)와 편향(b)값 불러오기
 
 PATH = '../input_image'
