@@ -44,7 +44,7 @@ class Trainer:
 
         # 모든 데이터를 설정한 epoch만큼 학습시키기 위한 반복 횟수
         self.max_iter = int(epochs * self.iter_per_epoch)
-        
+
         self.current_iter = 0
         self.current_epoch = 0
         
@@ -83,11 +83,14 @@ class Trainer:
         self.current_iter += 1
 
     def train(self):
+        # max_iter만큼 학습 실행
         for i in range(self.max_iter):
             self.train_step()
 
+        # 학습 정확도 계산
         test_acc = self.network.accuracy(self.x_test, self.t_test)
 
+        # 학습 종료 후 정확도 출력
         if self.verbose:
             print("=============== Final Test Accuracy ===============")
             print("test acc:" + str(test_acc))
