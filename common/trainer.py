@@ -7,10 +7,19 @@ from common.optimizer import *
 class Trainer:
     """신경망 훈련을 대신 해주는 클래스
     """
-    def __init__(self, network, x_train, t_train, x_test, t_test,
-                 epochs=20, mini_batch_size=100,
-                 optimizer='SGD', optimizer_param={'lr':0.01}, 
-                 evaluate_sample_num_per_epoch=None, verbose=True):
+    def __init__(self, 
+        network,    # 모델 종류
+        x_train,    # 훈련용 이미지
+        t_train,    # 훈련용 정답 레이블
+        x_test,     # 테스트용 이미지
+        t_test,     # 테스트용 정답 레이블
+        epochs=20,  # 전체 데이터 학습 횟수
+        mini_batch_size=100,    # 학습 시 배치 크기
+        optimizer='SGD',        # 가중치와 편향을 조정하는 방법
+        optimizer_param={'lr':0.01},        # 학습률
+        evaluate_sample_num_per_epoch=None,
+        verbose=True # 로깅 여부
+    ):
         self.network = network
         self.verbose = verbose
         self.x_train = x_train
@@ -18,17 +27,24 @@ class Trainer:
         self.x_test = x_test
         self.t_test = t_test
         self.epochs = epochs
-        self.batch_size = mini_batch_size
+        self.batch_size = mini_batch_size 
         self.evaluate_sample_num_per_epoch = evaluate_sample_num_per_epoch
 
         # optimzer
+        # 기울기에 대해 가중치와 편향을 조정하는 방법
         optimizer_class_dict = {'sgd':SGD, 'momentum':Momentum, 'nesterov':Nesterov,
                                 'adagrad':AdaGrad, 'rmsprpo':RMSprop, 'adam':Adam}
         self.optimizer = optimizer_class_dict[optimizer.lower()](**optimizer_param)
         
-        self.train_size = x_train.shape[0]
+        self.train_size = x_train.shape[0] # 학습 크기를 학습용 이미지 개수로 설정
+
+        # 1 epoch 당 학습해야 할 횟수
+        # 1번 학습에 배치크기만큼 학습하므로 전체 데이터를 1번 학습하기 위한 반복 횟수
         self.iter_per_epoch = max(self.train_size / mini_batch_size, 1)
+
+        # 모든 데이터를 설정한 epoch만큼 학습시키기 위한 반복 횟수
         self.max_iter = int(epochs * self.iter_per_epoch)
+        
         self.current_iter = 0
         self.current_epoch = 0
         
