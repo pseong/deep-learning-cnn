@@ -1,1 +1,4 @@
 .vscode/
+common/__pycache__
+dataset/__pycache__
+deep_convnet/__pycache__
