@@ -3,21 +3,28 @@ import numpy as np
 from common.functions import *
 from common.util import im2col, col2im
 
+"""
+    forward : 순전파
+    backward : 역전파
+    dx : 손실 함수 출력 L에 대한 x의 변화량 (x에 대한 편미분)
+    dW : 손실 함수 출력 L에 대한 W의 변화량 (W에 대한 편미분)
+    db : 손실 함수 출력 L에 대한 b의 변화량 (b에 대한 편미분)
+"""
 
 class Relu:
     def __init__(self):
         self.mask = None
 
     def forward(self, x):
-        self.mask = (x <= 0)
-        out = x.copy()
-        out[self.mask] = 0
+        self.mask = (x <= 0) # 0보다 작은값은 전부 True
+        out = x.copy() 
+        out[self.mask] = 0 # 0보다 작은값은 전부 0
 
         return out
 
     def backward(self, dout):
-        dout[self.mask] = 0
-        dx = dout
+        dout[self.mask] = 0 # 0보다 작은값은 전부 0
+        dx = dout # x를 미분하면 1이므로 1*dout = dout
 
         return dx
 
@@ -27,12 +34,12 @@ class Sigmoid:
         self.out = None
 
     def forward(self, x):
-        out = sigmoid(x)
+        out = sigmoid(x) # sigmoid 함수 적용
         self.out = out
         return out
 
     def backward(self, dout):
-        dx = dout * (1.0 - self.out) * self.out
+        dx = dout * (1.0 - self.out) * self.out # sigmoid 함수의 미분값이 y*(1-y) 따라서 dx = y*(1-y)*dout
 
         return dx
 
@@ -51,19 +58,24 @@ class Affine:
     def forward(self, x):
         # 텐서 대응
         self.original_x_shape = x.shape
+
+        # 높이 : 데이터의 개수, 가로 : -1 (데이터 크기)
+        # 입력 데이터가 2차원 또는 4차원인데, 4차원인 경우 2차원으로 변환시킴
         x = x.reshape(x.shape[0], -1)
         self.x = x
 
+        # 행렬 내적 후 편향 덧셈
         out = np.dot(self.x, self.W) + self.b
 
         return out
 
     def backward(self, dout):
+        # dx, dW, db 계산
         dx = np.dot(dout, self.W.T)
         self.dW = np.dot(self.x.T, dout)
         self.db = np.sum(dout, axis=0)
         
-        dx = dx.reshape(*self.original_x_shape)  # 입력 데이터 모양 변경(텐서 대응)
+        dx = dx.reshape(*self.original_x_shape)  # 입력 데이터 모양 변경(텐서 대응) 4차원 입력이였으면 4차원으로 되돌림
         return dx
 
 
