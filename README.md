@@ -1,8 +1,9 @@
 # Mnist 데이터 세트를 이용한 이미지 분류 CNN 모델  
 ## 패키지 설치
 ```
-pip3 install numpy
-pip3 install image
+python=3.9
+pip3 install numpy==1.22.1
+pip3 install matplotlib==3.5.1
 ```
 ## 테스트 방법  
 ```
