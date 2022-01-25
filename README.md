@@ -19,7 +19,7 @@ python classification.py
 4. 흰색 브러시를 사용하여 아무 숫자 적기
 5. 그리고 이미지를 mnist-cnn/input_image 에다가 저장
 
-이렇게 안하고 모든 손글씨를 인식하고 싶으면 새롭게 모델을 재학습 시켜야 합니다.  
+모든 손글씨를 인식하고 싶으면 새롭게 모델을 재학습 시켜야 합니다.  
 ## 학습 방법
 ```
 cd mnist-cnn/deep_convnet
