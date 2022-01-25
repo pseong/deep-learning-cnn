@@ -97,9 +97,9 @@ class DeepConvNet:
         self.layers.append(Pooling(pool_h=2, pool_w=2, stride=2)) # 풀링 계층
         self.layers.append(Affine(self.params['W7'], self.params['b7']))
         self.layers.append(Relu()) # 활성화 함수
-        self.layers.append(Dropout(0.5)) # 드랍 아웃 : 학습 시 랜덤으로 50프로의 노드 비활성화
+        self.layers.append(Dropout(0.5)) # 드랍 아웃 : 학습 시 랜덤으로 50프로의 노드 비활성화 테스트 시에는 출력값 * 0.5
         self.layers.append(Affine(self.params['W8'], self.params['b8'])) # 완전연결 계층
-        self.layers.append(Dropout(0.5)) # 드랍 아웃 : 학습 시 랜덤으로 50프로의 노드 비활성화
+        self.layers.append(Dropout(0.5)) # 드랍 아웃 : 학습 시 랜덤으로 50프로의 노드 비활성화 테스트 시에는 출력값 * 0.5
         
         self.last_layer = SoftmaxWithLoss() # 학습 시 이용되는 확률 계산 후 교차 엔트로피 오차를 이용하여 손실 계산 
 
