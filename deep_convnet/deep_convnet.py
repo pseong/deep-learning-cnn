@@ -15,26 +15,47 @@ class DeepConvNet:
         conv - relu - conv- relu - pool -
         conv - relu - conv- relu - pool -
         affine - relu - dropout - affine - dropout - softmax
+        
+        합성곱 계층 6개 + 완전연결 계층 2개
     """
-    def __init__(self, input_dim=(1, 28, 28),
+    def __init__(self, input_dim=(1, 28, 28), # 입력받는 이미지의 크기는 28X28 사이즈의 채널은 1개인 흑백 이미지
+                 # 합성 곱 계층의 파라미터 6개 (필터의 개수는 출력의 채널수를 결정)
                  conv_param_1 = {'filter_num':16, 'filter_size':3, 'pad':1, 'stride':1},
                  conv_param_2 = {'filter_num':16, 'filter_size':3, 'pad':1, 'stride':1},
                  conv_param_3 = {'filter_num':32, 'filter_size':3, 'pad':1, 'stride':1},
                  conv_param_4 = {'filter_num':32, 'filter_size':3, 'pad':2, 'stride':1},
                  conv_param_5 = {'filter_num':64, 'filter_size':3, 'pad':1, 'stride':1},
                  conv_param_6 = {'filter_num':64, 'filter_size':3, 'pad':1, 'stride':1},
+                 # 완전연결 계층 2개중 은닉층과 출력층의 크기
                  hidden_size=50, output_size=10):
         # 가중치 초기화===========
-        # 각 층의 뉴런 하나당 앞 층의 몇 개 뉴런과 연결되는가（TODO: 자동 계산되게 바꿀 것）
+        # 각 층의 뉴런 하나당 앞 층의 몇 개 뉴런과 연결되는가（TODO: 자동 계산되게 바꿀 것) --> 자동화가 가능함
+        # pre_node_nums[0] : 첫 입력 채널 크기가 1이고 필터의 사이즈가 3*3이기 때문에 1*3*3 (흑백 이미지를 입력 받기 때문에 채널의 크기는 1)
+        # pre_node_nums[1] : 입력 채널 크기가 16이고 필터의 사이즈가 3*3이기 때문에 16*3*3 (앞에서 필터 16개로 합성곱을 했으므로 출력 채널 크기는 16)
+        # pre_node_nums[2] : 입력 채널 크기가 16이고 필터의 사이즈가 3*3이기 때문에 16*3*3 (앞에서 필터 16개로 합성곱을 했으므로 출력 채널 크기는 16)
+        # pre_node_nums[3] : 입력 채널 크기가 32이고 필터의 사이즈가 3*3이기 때문에 32*3*3 (앞에서 필터 32개로 합성곱을 했으므로 출력 채널 크기는 32)
+        # pre_node_nums[4] : 입력 채널 크기가 32이고 필터의 사이즈가 3*3이기 때문에 32*3*3 (앞에서 필터 32개로 합성곱을 했으므로 출력 채널 크기는 32)
+        # pre_node_nums[5] : 입력 채널 크기가 64이고 필터의 사이즈가 3*3이기 때문에 64*3*3 (앞에서 필터 64개로 합성곱을 했으므로 출력 채널 크기는 64)
+        # pre_node_nums[6] : 입력 형상이 16*4*4이기 때문에 16*4*4 (Affine 계층의 완전연결은 필터를 사용하지 않고 출력 노드 하나당 입력의 모든 노드와 연결됨)
+        # pre_node_nums[7] : 입력 형상이 50이기 때문에 50 (Affine 계층의 완전연결은 필터를 사용하지 않고 출력 노드 하나당 입력의 모든 노드와 연결됨)
         pre_node_nums = np.array([1*3*3, 16*3*3, 16*3*3, 32*3*3, 32*3*3, 64*3*3, 64*4*4, hidden_size])
-        wight_init_scales = np.sqrt(2.0 / pre_node_nums)  # ReLU를 사용할 때의 권장 초깃값
+
+        wight_init_scales = np.sqrt(2.0 / pre_node_nums)  # ReLU를 사용할 때의 권장 초깃값 ( He 초깃값 )
         
-        self.params = {}
-        pre_channel_num = input_dim[0]
+        self.params = {} # 각 레이어의 가중치(W)와 편향(b)를 저장하기 위한 딕셔너리 변수
+        # 저장해야 할 가중치와 편향은 Convolution, Relu 레이어만 존재
+
+        pre_channel_num = input_dim[0] # 채널의 수를 따로 저장
+
+        # 합성 곱 계층을 전부 돌면서 self.params 변수 초기화
+        # 편향(b)는 기본적으로 0으로 초기화를 한다.
+        # 가중치(W)는 활성화 함수 ReLu 사용에 최적화된 표본편차가 sqrt(2/입력층의 수)인 표준정규분포를 따르는 난수로 설정 ( He 초깃값 )
         for idx, conv_param in enumerate([conv_param_1, conv_param_2, conv_param_3, conv_param_4, conv_param_5, conv_param_6]):
+            # 합성곱 가중치(W)의 형상은 필터의 크기이므로 필터의개수 X 채널 수 X 세로 X 가로 --> (필터의 개수, 채널 수, 세로 크기, 가로 크기)
             self.params['W' + str(idx+1)] = wight_init_scales[idx] * np.random.randn(conv_param['filter_num'], pre_channel_num, conv_param['filter_size'], conv_param['filter_size'])
             self.params['b' + str(idx+1)] = np.zeros(conv_param['filter_num'])
             pre_channel_num = conv_param['filter_num']
+        
         self.params['W7'] = wight_init_scales[6] * np.random.randn(64*4*4, hidden_size)
         self.params['b7'] = np.zeros(hidden_size)
         self.params['W8'] = wight_init_scales[7] * np.random.randn(hidden_size, output_size)
