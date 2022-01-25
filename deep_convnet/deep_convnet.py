@@ -102,7 +102,7 @@ class DeepConvNet:
         self.layers.append(Affine(self.params['W8'], self.params['b8'])) # 완전연결 계층
         self.layers.append(Dropout(0.5)) # 드랍 아웃 : 학습 시 랜덤으로 50프로의 노드 비활성화
         
-        self.last_layer = SoftmaxWithLoss() # 학습 시 이용되는 확률 계산
+        self.last_layer = SoftmaxWithLoss() # 학습 시 이용되는 확률 계산 후 교차 엔트로피 오차를 이용하여 손실 계산 
 
     # 이미지 입력 x를 모든 레이어를 통과시키고 마지막 출력값을 반환
     def predict(self, x, train_flg=False):
@@ -114,23 +114,29 @@ class DeepConvNet:
                 x = layer.forward(x)
         return x
 
+    # x : 이미지, t : 정답 레이블
+    # 예측을 수행하고 교차 엔트로피 오차를 이용하여 정답 레이블과의 손실 계산
     def loss(self, x, t):
         y = self.predict(x, train_flg=True)
         return self.last_layer.forward(y, t)
 
+    # x : 이미지, t : 정답 레이블, batch_size : 배치 크기
     def accuracy(self, x, t, batch_size=100):
+
+        # 원-핫 인코딩 이라면 정답만 나열되어있는 배열로 변경
         if t.ndim != 1 : t = np.argmax(t, axis=1)
 
         acc = 0.0
 
+        # 입력된 이미지들을 배치 크기만큼 여러개로 분할해서 예측 수행
         for i in range(int(x.shape[0] / batch_size)):
-            tx = x[i*batch_size:(i+1)*batch_size]
-            tt = t[i*batch_size:(i+1)*batch_size]
-            y = self.predict(tx, train_flg=False)
-            y = np.argmax(y, axis=1)
-            acc += np.sum(y == tt)
+            tx = x[i*batch_size:(i+1)*batch_size] # 이미지를 배치크기만큼 자르기
+            tt = t[i*batch_size:(i+1)*batch_size] # 정답을 배치크기만큼 자르기
+            y = self.predict(tx, train_flg=False) # 예측 수행
+            y = np.argmax(y, axis=1) # 예측된 값들중 가장 높은 값을 선택하여 예측
+            acc += np.sum(y == tt) # 예측된 값과 정답과 비교해서 같은 개수만 카운트해서 acc에 더함
 
-        return acc / x.shape[0]
+        return acc / x.shape[0] # acc를 전체 이미지 개수로 나눠서 정답률 반환
 
     def gradient(self, x, t):
         # forward
