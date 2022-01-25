@@ -7,14 +7,14 @@ from dataset.mnist import load_mnist
 from deep_convnet import DeepConvNet
 from common.trainer import Trainer
 
-(x_train, t_train), (x_test, t_test) = load_mnist(flatten=False)
+(x_train, t_train), (x_test, t_test) = load_mnist(flatten=False) # mnist 데이터 세트와 정답 레이블 로드
 
-network = DeepConvNet()  
+network = DeepConvNet() # DeepConvNet 사용 
 trainer = Trainer(network, x_train, t_train, x_test, t_test,
                   epochs=20, mini_batch_size=100,
                   optimizer='Adam', optimizer_param={'lr':0.001},
                   evaluate_sample_num_per_epoch=1000)
-trainer.train()
+trainer.train() # 학습 시작
 
 # 매개변수 보관
 network.save_params("deep_convnet_params.pkl")
