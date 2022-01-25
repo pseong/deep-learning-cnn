@@ -87,19 +87,20 @@ class SoftmaxWithLoss:
         
     def forward(self, x, t):
         self.t = t
-        self.y = softmax(x)
-        self.loss = cross_entropy_error(self.y, self.t)
+        self.y = softmax(x) # softmax 함수
+        self.loss = cross_entropy_error(self.y, self.t) # 교차 엔트로피 오차 함수
         
         return self.loss
 
     def backward(self, dout=1):
-        batch_size = self.t.shape[0]
+        batch_size = self.t.shape[0] # 정답 개수 = 데이터 개수 = 배치 크기
         if self.t.size == self.y.size: # 정답 레이블이 원-핫 인코딩 형태일 때
-            dx = (self.y - self.t) / batch_size
+            # L(최종 출력)에 대한 x 편미분
+            dx = (self.y - self.t) / batch_size # 교차 엔트로피 오차 함수에서 batch_size를 나눴으므로 미분도 나눠줘야 함
         else:
             dx = self.y.copy()
-            dx[np.arange(batch_size), self.t] -= 1
-            dx = dx / batch_size
+            dx[np.arange(batch_size), self.t] -= 1 # 정답 노드만 선택해서 1을 빼준다. 정답노드는 무조건 1 이기 때문에 y-t와 같음
+            dx = dx / batch_size # 교차 엔트로피 오차 함수에서 batch_size를 나눴으므로 미분도 나눠줘야 함
         
         return dx
 
