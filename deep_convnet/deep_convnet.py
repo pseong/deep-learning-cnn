@@ -171,6 +171,7 @@ class DeepConvNet:
 
         return grads
 
+    # 모델 저장
     def save_params(self, file_name="deep_convnet_params.pkl"):
         params = {}
         for key, val in self.params.items():
@@ -178,6 +179,7 @@ class DeepConvNet:
         with open(file_name, 'wb') as f:
             pickle.dump(params, f)
 
+    # 모델 불러오기
     def load_params(self, file_name="deep_convnet_params.pkl"):
         with open(file_name, 'rb') as f:
             params = pickle.load(f)
