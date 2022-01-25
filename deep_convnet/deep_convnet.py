@@ -40,22 +40,34 @@ class DeepConvNet:
         # pre_node_nums[7] : 입력 형상이 50이기 때문에 50 (Affine 계층의 완전연결은 필터를 사용하지 않고 출력 노드 하나당 입력의 모든 노드와 연결됨)
         pre_node_nums = np.array([1*3*3, 16*3*3, 16*3*3, 32*3*3, 32*3*3, 64*3*3, 64*4*4, hidden_size])
 
-        wight_init_scales = np.sqrt(2.0 / pre_node_nums)  # ReLU를 사용할 때의 권장 초깃값 ( He 초깃값 )
+        wight_init_scales = np.sqrt(2.0 / pre_node_nums)  # ReLU를 사용할 때의 권장 초기값 ( He 초기값 )
         
         self.params = {} # 각 레이어의 가중치(W)와 편향(b)를 저장하기 위한 딕셔너리 변수
         # 저장해야 할 가중치와 편향은 Convolution, Relu 레이어만 존재
 
-        pre_channel_num = input_dim[0] # 채널의 수를 따로 저장
+        # 합성곱 가중치(W)의 형상을 정하기 위해 이전 채널의 크기를 정함
+        # 가중치(W)의 채널의 크기는 항상 입력 채널의 크기와 같아야 하기 때문
+        # 필터의 개수는 출력의 채널수를 결정
+        pre_channel_num = input_dim[0]
 
         # 합성 곱 계층을 전부 돌면서 self.params 변수 초기화
         # 편향(b)는 기본적으로 0으로 초기화를 한다.
-        # 가중치(W)는 활성화 함수 ReLu 사용에 최적화된 표본편차가 sqrt(2/입력층의 수)인 표준정규분포를 따르는 난수로 설정 ( He 초깃값 )
+        # 가중치(W)는 활성화 함수 ReLu 사용에 최적화된 표본편차가 sqrt(2/입력층의 수)인 표준정규분포를 따르는 난수로 설정 ( He 초기값 )
         for idx, conv_param in enumerate([conv_param_1, conv_param_2, conv_param_3, conv_param_4, conv_param_5, conv_param_6]):
             # 합성곱 가중치(W)의 형상은 필터의 크기이므로 필터의개수 X 채널 수 X 세로 X 가로 --> (필터의 개수, 채널 수, 세로 크기, 가로 크기)
             self.params['W' + str(idx+1)] = wight_init_scales[idx] * np.random.randn(conv_param['filter_num'], pre_channel_num, conv_param['filter_size'], conv_param['filter_size'])
+
+            # 합성곱 편향(b)의 형상은 필터의 크기만큼 필요함
+            # 각 필터마다 일괄적으로 편향을 더해주기 때문
             self.params['b' + str(idx+1)] = np.zeros(conv_param['filter_num'])
+
+            # 이전 채널의 수 갱신
             pre_channel_num = conv_param['filter_num']
         
+        # Affine 계층의 가중치와 편향 초기화
+        # 가중치(W)의 형상은 (입력크기, 출력크기)
+        # 행렬곱으로 바로 출력을 하기위해 이렇게 지정
+        # 초기값은 전부 He 초기값 사용
         self.params['W7'] = wight_init_scales[6] * np.random.randn(64*4*4, hidden_size)
         self.params['b7'] = np.zeros(hidden_size)
         self.params['W8'] = wight_init_scales[7] * np.random.randn(hidden_size, output_size)
@@ -64,33 +76,33 @@ class DeepConvNet:
         # 계층 생성===========
         self.layers = []
         self.layers.append(Convolution(self.params['W1'], self.params['b1'], 
-                           conv_param_1['stride'], conv_param_1['pad']))
-        self.layers.append(Relu())
+                           conv_param_1['stride'], conv_param_1['pad'])) # 합성곱 계층
+        self.layers.append(Relu()) # 활성화 함수
         self.layers.append(Convolution(self.params['W2'], self.params['b2'], 
-                           conv_param_2['stride'], conv_param_2['pad']))
-        self.layers.append(Relu())
-        self.layers.append(Pooling(pool_h=2, pool_w=2, stride=2))
+                           conv_param_2['stride'], conv_param_2['pad'])) # 합성곱 계층
+        self.layers.append(Relu()) # 활성화 함수
+        self.layers.append(Pooling(pool_h=2, pool_w=2, stride=2)) # 풀링 계층
         self.layers.append(Convolution(self.params['W3'], self.params['b3'], 
-                           conv_param_3['stride'], conv_param_3['pad']))
-        self.layers.append(Relu())
+                           conv_param_3['stride'], conv_param_3['pad'])) # 합성곱 계층
+        self.layers.append(Relu()) # 활성화 함수
         self.layers.append(Convolution(self.params['W4'], self.params['b4'],
-                           conv_param_4['stride'], conv_param_4['pad']))
-        self.layers.append(Relu())
-        self.layers.append(Pooling(pool_h=2, pool_w=2, stride=2))
+                           conv_param_4['stride'], conv_param_4['pad'])) # 합성곱 계층
+        self.layers.append(Relu()) # 활성화 함수
+        self.layers.append(Pooling(pool_h=2, pool_w=2, stride=2)) # 풀링 계층
         self.layers.append(Convolution(self.params['W5'], self.params['b5'],
-                           conv_param_5['stride'], conv_param_5['pad']))
-        self.layers.append(Relu())
+                           conv_param_5['stride'], conv_param_5['pad'])) # 합성곱 계층
+        self.layers.append(Relu()) # 활성화 함수
         self.layers.append(Convolution(self.params['W6'], self.params['b6'],
-                           conv_param_6['stride'], conv_param_6['pad']))
-        self.layers.append(Relu())
-        self.layers.append(Pooling(pool_h=2, pool_w=2, stride=2))
+                           conv_param_6['stride'], conv_param_6['pad'])) # 합성곱 계층
+        self.layers.append(Relu()) # 활성화 함수
+        self.layers.append(Pooling(pool_h=2, pool_w=2, stride=2)) # 풀링 계층
         self.layers.append(Affine(self.params['W7'], self.params['b7']))
-        self.layers.append(Relu())
-        self.layers.append(Dropout(0.5))
-        self.layers.append(Affine(self.params['W8'], self.params['b8']))
-        self.layers.append(Dropout(0.5))
+        self.layers.append(Relu()) # 활성화 함수
+        self.layers.append(Dropout(0.5)) # 드랍 아웃 : 학습 시 랜덤으로 50프로의 노드 비활성화
+        self.layers.append(Affine(self.params['W8'], self.params['b8'])) # 완전연결 계층
+        self.layers.append(Dropout(0.5)) # 드랍 아웃 : 학습 시 랜덤으로 50프로의 노드 비활성화
         
-        self.last_layer = SoftmaxWithLoss()
+        self.last_layer = SoftmaxWithLoss() # 학습 시 이용되는 확률 계산
 
     def predict(self, x, train_flg=False):
         for layer in self.layers:
