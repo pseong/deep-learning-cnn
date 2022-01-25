@@ -9,7 +9,6 @@ from common.layers import *
 
 class DeepConvNet:
     """정확도 99% 이상의 고정밀 합성곱 신경망
-
     네트워크 구성은 아래와 같음
         conv - relu - conv- relu - pool -
         conv - relu - conv- relu - pool -
@@ -114,7 +113,7 @@ class DeepConvNet:
                 x = layer.forward(x)
         return x
 
-    # x : 이미지, t : 정답 레이블
+    # x : 이미지들, t : 정답 레이블
     # 예측을 수행하고 교차 엔트로피 오차를 이용하여 정답 레이블과의 손실 계산
     def loss(self, x, t):
         y = self.predict(x, train_flg=True)
@@ -138,11 +137,15 @@ class DeepConvNet:
 
         return acc / x.shape[0] # acc를 전체 이미지 개수로 나눠서 정답률 반환
 
+    # 각 가중치(W)와 편향(b)의 기울기 계산
+    # x : 이미지들, t : 정답 레이블
     def gradient(self, x, t):
         # forward
+        # 역전파 계산을 위해 순전파를 통한 출력값 저장
         self.loss(x, t)
 
         # backward
+        # 순전파때 저장한 출력값을 이용하여 역전파 계산
         dout = 1
         dout = self.last_layer.backward(dout)
 
@@ -152,6 +155,15 @@ class DeepConvNet:
             dout = layer.backward(dout)
 
         # 결과 저장
+        """레이어 구성은 다음과 같음
+            conv - relu - conv- relu - pool -
+            conv - relu - conv- relu - pool -
+            conv - relu - conv- relu - pool -
+            affine - relu - dropout - affine - dropout - softmax
+            가중치와 편향을 저장하는 레이어는 conv와 affine 두개 레이어
+            따라서 가중치와 편향을 저장해야하는 레이어 인덱스는
+            (0, 2, 5, 7, 10, 12, 15, 18)
+        """
         grads = {}
         for i, layer_idx in enumerate((0, 2, 5, 7, 10, 12, 15, 18)):
             grads['W' + str(i+1)] = self.layers[layer_idx].dW
