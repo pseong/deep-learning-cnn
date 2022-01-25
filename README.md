@@ -1,4 +1,9 @@
 # Mnist 데이터 세트를 이용한 이미지 분류 CNN 모델  
+## 패키지 설치
+```
+pip3 install numpy
+pip3 install image
+```
 ## 테스트 방법  
 ```
 git clone https://github.com/pseong/mnist-cnn.git
