@@ -45,5 +45,5 @@ img3.png : ![img3](https://user-images.githubusercontent.com/76799354/151032977-
 
 블로그 정리 : https://pseong.tistory.com/17  
 
-책 이름 : 밑바닥부터 시작하는 딥러닝 1
-참고 소스 : https://github.com/WegraLee/deep-learning-from-scratch
+책 : 밑바닥부터 시작하는 딥러닝 1  
+참고 소스 : https://github.com/WegraLee/deep-learning-from-scratch  
