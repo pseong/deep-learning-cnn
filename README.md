@@ -28,6 +28,15 @@ python train_deepnet.py
 ## 학습 데이터 수정 방법
 mnist-cnn/deep_convnet/train_deepnet.py에 10번째 줄 변경  
 
+## 실제 테스트 결과
+img.png : ![img](https://user-images.githubusercontent.com/76799354/151032964-2eea029a-1673-4dcc-a256-3d6cc9f2c99b.png)
+img2.png : ![img2](https://user-images.githubusercontent.com/76799354/151032969-ee37a81c-a87b-4944-9591-54a3d89e03e6.png)
+img3.png : ![img3](https://user-images.githubusercontent.com/76799354/151032977-be3465b6-b489-4d18-93b2-5b5a981d7573.png)
+
+출력 결과 : ![출력 결과](https://user-images.githubusercontent.com/76799354/151033316-6d38beea-be2b-4a03-bd93-334dfa84faeb.png)
+
+잘 작동한다.  
+
 블로그 정리 : https://pseong.tistory.com/17  
 
 참고 코드 : https://github.com/WegraLee/deep-learning-from-scratch
