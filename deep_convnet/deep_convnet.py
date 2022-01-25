@@ -107,7 +107,7 @@ class DeepConvNet:
     # 이미지 입력 x를 모든 레이어를 통과시키고 마지막 출력값을 반환
     def predict(self, x, train_flg=False):
         for layer in self.layers:
-            # Dropout 레이어일 경우 학습 시에만 랜덩으로 노드를 비활성화 시키고 다른 경우에는 활성화 비율을 곱해줌
+            # Dropout 레이어일 경우 학습 시에만 랜덤으로 노드를 비활성화 시키고 다른 경우에는 활성화 비율을 곱해줌
             if isinstance(layer, Dropout):
                 x = layer.forward(x, train_flg)
             else:
