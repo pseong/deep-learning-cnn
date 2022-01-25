@@ -38,19 +38,19 @@ class Trainer:
         
         self.train_size = x_train.shape[0] # 학습 크기를 학습용 이미지 개수로 설정
 
-        # 1 epoch 당 학습해야 할 횟수
+        # 1 epoch 당 학습해야 할 횟수 ( epoch : 모든 데이터 세트를 한번씩 학습했을 때 1씩 증가 )
         # 1번 학습에 배치크기만큼 학습하므로 전체 데이터를 1번 학습하기 위한 반복 횟수
         self.iter_per_epoch = max(self.train_size / mini_batch_size, 1)
 
         # 모든 데이터를 설정한 epoch만큼 학습시키기 위한 반복 횟수
         self.max_iter = int(epochs * self.iter_per_epoch)
 
-        self.current_iter = 0
-        self.current_epoch = 0
+        self.current_iter = 0 # 학습 카운트
+        self.current_epoch = 0 # 학습 epoch 카운트
         
-        self.train_loss_list = []
-        self.train_acc_list = []
-        self.test_acc_list = []
+        self.train_loss_list = [] # 학습 손실 로그
+        self.train_acc_list = [] # 학습 정확도 로그
+        self.test_acc_list = [] # 테스트 정확도 로그
 
     def train_step(self):
         batch_mask = np.random.choice(self.train_size, self.batch_size) # 배치 크기만큼 전체 데이터셋에서 랜덤으로 선택
