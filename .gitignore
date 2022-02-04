@@ -1,4 +1,4 @@
 .vscode/
-common/__pycache__
-dataset/__pycache__
-deep_convnet/__pycache__
+mnist-python/common/__pycache__
+mnist-python/dataset/__pycache__
+mnist-python/deep_convnet/__pycache__
